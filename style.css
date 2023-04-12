@@ -1,0 +1,6 @@
+body{
+    display: grid;
+    min-height:100vh;
+    place-items: center;
+    overflow: hidden;
+}
