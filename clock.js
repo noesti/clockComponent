@@ -2,7 +2,7 @@ const template=document.createElement("template");
 template.innerHTML=
     `
 <style>
-all{
+*{
     box-sizing: border-box;
 }
 .clock{
@@ -106,12 +106,13 @@ export class Clock extends HTMLElement {
         super();
         const shadow=this.attachShadow({mode: "open"});
         shadow.append(template.content.cloneNode(true));
-        const sec=this.shadowRoot.querySelector(".seconds");
-        const min=this.shadowRoot.querySelector(".minutes");
-        const hour=this.shadowRoot.querySelector(".hours");
-        this.setTime(sec,min,hour);
+        this.timeZone=this.dataset.timezone;
+        this.secHand=this.shadowRoot.querySelector(".seconds");
+        this.minHand=this.shadowRoot.querySelector(".minutes");
+        this.hourHand=this.shadowRoot.querySelector(".hours");
+        this.setTime();
         setInterval(() => {
-            this.setTime(sec,min,hour)
+            this.setTime()
         },1000);
     }
     
@@ -124,18 +125,19 @@ export class Clock extends HTMLElement {
     }
 
     updateTimeZone(value){
-        value == null ?  this.timeZone = "UTC" : this.timeZone = value;
+        value == "" ?  this.timeZone = "UTC" : this.timeZone = value;
         this.shadowRoot.querySelector(".timezone").innerHTML=this.timeZone;
+        this.setTime();
     }
 
-    setTime(sec,min,hour) {
-        let now=new Date(new Date().toLocaleString("de", {timeZone: this.timeZone}));
-        this.seconds=now.getSeconds()/60;
-        this.minutes=(this.seconds+now.getMinutes())/60;
-        this.hours=(this.minutes+now.getHours())/12;
-        this.setRotation(sec,this.seconds);
-        this.setRotation(min,this.minutes);
-        this.setRotation(hour,this.hours);
+    setTime() {
+        let now=new Date(new Date().toLocaleString("en", {timeZone: this.timeZone}));
+        let seconds=now.getSeconds()/60;
+        let minutes=(seconds+now.getMinutes())/60;
+        let hours=(minutes+now.getHours())/12;
+        this.setRotation(this.secHand,seconds);
+        this.setRotation(this.minHand,minutes);
+        this.setRotation(this.hourHand,hours);
     }
 
     setRotation(hand,rotationValue) {
@@ -144,17 +146,3 @@ export class Clock extends HTMLElement {
 }
 
 customElements.define("custom-clock",Clock);
-
-// function isValidTimeZone(tz) {
-//     if (!Intl || !Intl.DateTimeFormat().resolvedOptions().timeZone) {
-//         throw new Error('Time zones are not available in this environment');
-//     }
-
-//     try {
-//         Intl.DateTimeFormat(undefined, {timeZone: tz});
-//         return true;
-//     }
-//     catch (ex) {
-//         return false;
-//     }
-// }
